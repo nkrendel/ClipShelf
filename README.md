@@ -17,8 +17,10 @@ swift test                # unit tests
 Quit ClipMenu before using ClipShelf: both use ⌃⌘V by default.
 
 To paste automatically after you pick an item, allow ClipShelf in
-**System Settings › Privacy & Security › Accessibility**. Because local builds
-are ad-hoc signed, you may need to turn it off and on again there after a rebuild.
+**System Settings › Privacy & Security › Accessibility**. `build-app.sh` signs
+with your Apple Development certificate when you have one, so the permission
+survives rebuilds. Without one the app is ad-hoc signed, and you need to remove
+and re-add ClipShelf there after every rebuild.
 
 ## Using it
 

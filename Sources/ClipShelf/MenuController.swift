@@ -1,4 +1,8 @@
 import AppKit
+import Carbon.HIToolbox
+import os
+
+private let log = Logger(subsystem: "app.clipshelf.ClipShelf", category: "menu")
 
 /// Builds the history menu for the menu-bar icon and the global hotkey.
 ///
@@ -77,8 +81,13 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         previousApp = front?.processIdentifier == ProcessInfo.processInfo.processIdentifier ? nil : front
         selectedDuringPopUp = false
 
-        // The menu needs keyboard focus for typing and arrow keys.
-        NSApp.activate()
+        // The menu needs keyboard focus for typing and arrow keys. But while
+        // another app holds Secure Keyboard Entry (a password field), macOS
+        // refuses to switch apps, and the failed switch closes the menu a
+        // moment later. Then open the menu without switching.
+        let secureInput = IsSecureEventInputEnabled()
+        if !secureInput { NSApp.activate() }
+        log.info("popUp: front=\(front?.bundleIdentifier ?? "-", privacy: .public) active=\(NSApp.isActive) secureInput=\(secureInput)")
         let pointer = NSEvent.mouseLocation
         let screen = NSScreen.screens.first { NSMouseInRect(pointer, $0.frame, false) } ?? NSScreen.main
         repeat {
@@ -120,6 +129,7 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         // search, open it again with the search cleared, as if Escape had only
         // cleared it.
         let event = NSApp.currentEvent
+        log.info("menuDidClose: event=\(event.map { String(describing: $0.type) } ?? "-", privacy: .public) key=\(event?.type == .keyDown ? Int(event!.keyCode) : -1) subtype=\(event?.type == .appKitDefined ? Int(event!.subtype.rawValue) : -1) active=\(NSApp.isActive) secureInput=\(IsSecureEventInputEnabled()) searching=\(!self.query.isEmpty)")
         if !query.isEmpty, pendingSelection == nil, event?.type == .keyDown, event?.keyCode == 53 {
             reopenRequested = true
             if menu === statusItem.menu {
@@ -311,6 +321,20 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
     /// never gets here; see `menuDidClose`.)
     func control(_ control: NSControl, textView: NSTextView, doCommandBy selector: Selector) -> Bool {
         guard let menu = openMenu else { return false }
+        let arrows: [Selector] = [
+            #selector(NSResponder.moveDown(_:)), #selector(NSResponder.moveUp(_:)),
+            #selector(NSResponder.moveLeft(_:)), #selector(NSResponder.moveRight(_:)),
+        ]
+        if query.isEmpty, arrows.contains(selector) {
+            // Not searching: hand the keyboard back to the menu so arrows work
+            // as in any macOS menu (and as in ClipMenu): ↑/↓ move between
+            // folders, → or ← opens one, the other way comes back out.
+            control.window?.makeFirstResponder(nil)
+            let items = menu.items.filter { $0.isEnabled && !$0.isSeparatorItem && $0.view == nil }
+            let goingUp = selector == #selector(NSResponder.moveUp(_:))
+            if let item = goingUp ? items.last : items.first { highlight(item, in: menu) }
+            return true
+        }
         switch selector {
         case #selector(NSResponder.moveDown(_:)):
             moveHighlight(by: 1, in: menu)
