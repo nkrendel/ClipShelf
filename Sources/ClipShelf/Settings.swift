@@ -47,7 +47,8 @@ enum Settings {
         defaults.register(defaults: [
             Key.maxHistory: 100,
             Key.pasteAfterSelect: true,
-            Key.inlineCount: 10,
+            // Like ClipMenu: every clip in a folder (1–10, 11–20, …).
+            Key.inlineCount: 0,
             Key.folderSize: 10,
             Key.titleLength: 40,
             Key.numberItems: true,

@@ -22,8 +22,9 @@ are ad-hoc signed, you may need to turn it off and on again there after a rebuil
 
 ## Using it
 
-- **⌃⌘V** or the menu-bar icon opens the history. The first 10 items are
-  inline with keys 1–0; older ones are grouped in folders.
+- **⌃⌘V** or the menu-bar icon opens the history, grouped in folders of 10
+  (1 – 10, 11 – 20, …) like ClipMenu. Keys 1–0 pick the 10 most recent clips.
+  Settings can show some items above the folders instead.
 - **Start typing** while the menu is open to search the whole history, not
   just the top 10. Matches are listed with their history number and the folder
   they live in (e.g. `37. …invoice for March…   in 31 – 40`), matched words in

@@ -71,6 +71,12 @@ final class MenuLayoutTests: XCTestCase {
         XCTAssertEqual(MenuLayout.folder(containing: 94, inlineCount: 10, folderSize: 10, total: 95), 91...95)
         XCTAssertNil(MenuLayout.folder(containing: 95, inlineCount: 10, folderSize: 10, total: 95))
     }
+
+    func testWithNoInlineItemsTheFirstFolderIsOneToTen() {
+        XCTAssertEqual(MenuLayout.folder(containing: 0, inlineCount: 0, folderSize: 10, total: 100), 1...10)
+        XCTAssertEqual(MenuLayout.folder(containing: 9, inlineCount: 0, folderSize: 10, total: 100), 1...10)
+        XCTAssertEqual(MenuLayout.folder(containing: 10, inlineCount: 0, folderSize: 10, total: 100), 11...20)
+    }
 }
 
 final class MenuPlacementTests: XCTestCase {

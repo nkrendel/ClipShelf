@@ -6,7 +6,7 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @AppStorage(Settings.Key.maxHistory) private var maxHistory = 100
     @AppStorage(Settings.Key.pasteAfterSelect) private var pasteAfterSelect = true
-    @AppStorage(Settings.Key.inlineCount) private var inlineCount = 10
+    @AppStorage(Settings.Key.inlineCount) private var inlineCount = 0
     @AppStorage(Settings.Key.folderSize) private var folderSize = 10
     @AppStorage(Settings.Key.titleLength) private var titleLength = 40
     @AppStorage(Settings.Key.numberItems) private var numberItems = true

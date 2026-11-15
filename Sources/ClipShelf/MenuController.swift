@@ -168,10 +168,12 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
     }
 
     private func addHistoryItems(to menu: NSMenu, clips: [Clip]) {
+        // Clips 1–10 show the 1–0 keys that pick them, inline or in a folder.
+        func key(_ index: Int) -> String { index < 10 ? String((index + 1) % 10) : "" }
+
         let inline = min(Settings.inlineCount, clips.count)
         for index in 0..<inline {
-            let key = index < 10 ? String((index + 1) % 10) : ""
-            menu.addItem(makeItem(for: clips[index], number: index + 1, keyEquivalent: key))
+            menu.addItem(makeItem(for: clips[index], number: index + 1, keyEquivalent: key(index)))
         }
 
         var start = inline
@@ -181,7 +183,7 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
             folder.image = symbol("folder")
             let submenu = NSMenu()
             for index in start..<end {
-                submenu.addItem(makeItem(for: clips[index], number: index + 1, keyEquivalent: ""))
+                submenu.addItem(makeItem(for: clips[index], number: index + 1, keyEquivalent: key(index)))
             }
             folder.submenu = submenu
             menu.addItem(folder)
@@ -331,10 +333,11 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         // Before a search starts, 1–0 pick the numbered items, as in ClipMenu.
         if query.isEmpty, text.count == 1, let digit = text.first?.wholeNumberValue, let menu = openMenu {
             let index = digit == 0 ? 9 : digit - 1
-            let items = clipItems(in: menu)
-            if index < min(Settings.inlineCount, items.count) {
+            let clips = store.history.clips
+            // The item may be at the top of the menu or inside the 1–10 folder.
+            if index < clips.count, let item = menuItem(for: clips[index].id, in: menu) {
                 searchField.stringValue = ""
-                pendingSelection = items[index]
+                pendingSelection = item
                 menu.cancelTracking()
                 return
             }
@@ -352,6 +355,15 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         guard let menu = openMenu else { return }
         rebuild(menu)
         if let first = firstResultItem { highlight(first, in: menu) }
+    }
+
+    /// The item for a clip, searching folders too.
+    private func menuItem(for id: Clip.ID, in menu: NSMenu) -> NSMenuItem? {
+        for item in menu.items {
+            if item.representedObject as? UUID == id { return item }
+            if let submenu = item.submenu, let found = menuItem(for: id, in: submenu) { return found }
+        }
+        return nil
     }
 
     /// The history or search-result items in the menu, top to bottom.
@@ -427,6 +439,10 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
     }
 
     @objc private func showSettings() {
+        // Stay in ClipShelf: otherwise the hotkey menu switches back to the
+        // previous app when it closes, which hides the Settings window.
+        selectedDuringPopUp = true
+        previousApp = nil
         openSettings()
     }
 
