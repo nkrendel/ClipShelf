@@ -79,13 +79,17 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
 
         // The menu needs keyboard focus for typing and arrow keys.
         NSApp.activate()
-        let location = NSEvent.mouseLocation
+        let pointer = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { NSMouseInRect(pointer, $0.frame, false) } ?? NSScreen.main
         repeat {
             reopenRequested = false
             let menu = NSMenu()
             menu.delegate = self
             rebuild(menu)
-            menu.popUp(positioning: nil, at: location, in: nil)
+            let origin = screen.map {
+                MenuLayout.popUpOrigin(pointer: pointer, menuSize: menu.size, visibleFrame: $0.visibleFrame)
+            } ?? pointer
+            menu.popUp(positioning: nil, at: origin, in: nil)
         } while reopenRequested && !selectedDuringPopUp
 
         if !selectedDuringPopUp {

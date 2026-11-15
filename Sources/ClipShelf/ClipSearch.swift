@@ -103,4 +103,19 @@ enum MenuLayout {
         let start = inlineCount + (index - inlineCount) / size * size
         return (start + 1)...min(start + size, total)
     }
+
+    /// Where to put the top-left corner of a menu opened at the pointer so
+    /// the whole menu stays on screen. Left to itself, macOS sometimes
+    /// shrinks a menu opened near the bottom of the screen to a few
+    /// scrolling items instead of moving it up.
+    static func popUpOrigin(pointer: NSPoint, menuSize: NSSize, visibleFrame: NSRect) -> NSPoint {
+        var x = pointer.x
+        if x + menuSize.width > visibleFrame.maxX { x = visibleFrame.maxX - menuSize.width }
+        x = max(x, visibleFrame.minX)
+
+        var top = pointer.y
+        if top - menuSize.height < visibleFrame.minY { top = visibleFrame.minY + menuSize.height }
+        top = min(top, visibleFrame.maxY)
+        return NSPoint(x: x, y: top)
+    }
 }

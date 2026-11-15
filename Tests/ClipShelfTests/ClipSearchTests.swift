@@ -72,3 +72,31 @@ final class MenuLayoutTests: XCTestCase {
         XCTAssertNil(MenuLayout.folder(containing: 95, inlineCount: 10, folderSize: 10, total: 95))
     }
 }
+
+final class MenuPlacementTests: XCTestCase {
+    // A 1440×900 screen whose visible area excludes a 25 pt menu bar and a 60 pt Dock.
+    private let visible = NSRect(x: 0, y: 60, width: 1440, height: 815)
+    private let size = NSSize(width: 300, height: 500)
+
+    func testKeepsThePointerAsTopLeftWhenTheMenuFits() {
+        XCTAssertEqual(MenuLayout.popUpOrigin(pointer: NSPoint(x: 100, y: 800), menuSize: size, visibleFrame: visible),
+                       NSPoint(x: 100, y: 800))
+    }
+
+    func testMovesUpNearTheBottomOfTheScreen() {
+        // Pointer 100 pt above the Dock: the 500 pt menu must rise so its bottom sits on the visible area.
+        XCTAssertEqual(MenuLayout.popUpOrigin(pointer: NSPoint(x: 100, y: 160), menuSize: size, visibleFrame: visible),
+                       NSPoint(x: 100, y: 560))
+    }
+
+    func testMovesLeftNearTheRightEdge() {
+        XCTAssertEqual(MenuLayout.popUpOrigin(pointer: NSPoint(x: 1400, y: 800), menuSize: size, visibleFrame: visible),
+                       NSPoint(x: 1140, y: 800))
+    }
+
+    func testMenuTallerThanTheScreenStartsAtTheTop() {
+        let tall = NSSize(width: 300, height: 2000)
+        XCTAssertEqual(MenuLayout.popUpOrigin(pointer: NSPoint(x: 100, y: 160), menuSize: tall, visibleFrame: visible),
+                       NSPoint(x: 100, y: 875))
+    }
+}
