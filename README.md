@@ -24,6 +24,14 @@ are ad-hoc signed, you may need to turn it off and on again there after a rebuil
 
 - **⌃⌘V** or the menu-bar icon opens the history. The first 10 items are
   inline with keys 1–0; older ones are grouped in folders.
+- **Start typing** while the menu is open to search the whole history, not
+  just the top 10. Matches are listed with their history number and the folder
+  they live in (e.g. `37. …invoice for March…   in 31 – 40`), matched words in
+  bold. The first match is selected, so **Return** pastes it; ↑/↓ pick
+  another. **Escape** clears the search (the menu closes and reopens, since
+  macOS menus don't let the field see Escape); a second Escape closes it.
+  Every word must match, in any order; case and accents are ignored. Before
+  you type a letter, 1–0 still pick items.
 - Click an item to paste it into the app you were using.
   **⌥-click** pastes as plain text, **⇧-click** only copies, **⌃-click** removes it.
 - **Import ClipMenu History** (in the menu) brings over ClipMenu's
