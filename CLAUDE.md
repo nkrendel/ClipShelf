@@ -53,18 +53,21 @@ bd close <id>         # Complete work
 
 ## Build & Test
 
-_Add your build and test commands here_
-
 ```bash
-# Example:
-# npm install
-# npm test
+swift test                # unit tests
+./build-app.sh            # builds build/ClipShelf.app (arm64, ad-hoc signed)
+./build-app.sh --install  # also copies it to /Applications
 ```
 
 ## Architecture Overview
 
-_Add a brief overview of your project architecture_
+SwiftPM executable (macOS 14+), packaged into a menu-bar .app by `build-app.sh`.
+`ClipStore` polls `NSPasteboard.changeCount` and keeps a `ClipHistory` (saved to
+`~/Library/Application Support/ClipShelf/history.plist`); `PasteboardIO` reads and
+writes clips; `MenuController` builds the status-item menu; `HotKeys` wraps Carbon
+`RegisterEventHotKey`; `Paster` sends ⌘V (needs Accessibility). Keep logic that can
+be tested out of AppKit types and cover it in `Tests/ClipShelfTests`.
 
 ## Conventions & Patterns
 
-_Add your project-specific conventions here_
+No git remote yet: commit locally; skip the push step until one is added.
