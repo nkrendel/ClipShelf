@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "clipshelf",
+  "project_id": "e0d39347-ffe9-4219-8ac4-7f34a7f45d82"
+}
