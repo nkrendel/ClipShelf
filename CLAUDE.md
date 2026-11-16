@@ -70,4 +70,4 @@ be tested out of AppKit types and cover it in `Tests/ClipShelfTests`.
 
 ## Conventions & Patterns
 
-No git remote yet: commit locally; skip the push step until one is added.
+Remote: `origin` is git@github.com:nkrendel/ClipShelf.git, reached through the `github-clipshelf` host alias in ~/.ssh/config (key ~/.ssh/clipshelf_ed25519).
