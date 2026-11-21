@@ -290,12 +290,14 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
     }
 
     private func icon(for clip: Clip) -> NSImage? {
-        if clip.fromOtherDevice && Settings.markOtherDeviceClips {
-            // Tinted so it stands out among the color document icons.
-            let config = NSImage.SymbolConfiguration(paletteColors: [.systemBlue])
-            return (symbol("laptopcomputer.and.arrow.down") ?? symbol("icloud.and.arrow.down"))?
-                .withSymbolConfiguration(config)
+        let icon = typeIcon(for: clip)
+        if clip.fromOtherDevice && Settings.markOtherDeviceClips, let icon {
+            return FinderIcon.badgedFromOtherDevice(icon)
         }
+        return icon
+    }
+
+    private func typeIcon(for clip: Clip) -> NSImage? {
         switch clip.kind {
         case .image:
             if let data = clip.image, let image = NSImage(data: data) {
@@ -499,6 +501,31 @@ enum FinderIcon {
     static let clipping = image(forTypeCode: "clpu", fallback: .item)
     static let internetLocation = image(
         for: UTType("com.apple.web-internet-location") ?? UTType(tag: "gurl", tagClass: osType, conformingTo: nil) ?? .url)
+
+    /// The icon with a small blue badge (a white laptop on a blue dot) in
+    /// the bottom-right corner, marking a clip copied on another Mac.
+    static func badgedFromOtherDevice(_ base: NSImage) -> NSImage {
+        let badged = NSImage(size: size, flipped: false) { rect in
+            base.draw(in: rect)
+            let dot = NSRect(x: rect.maxX - 8.5, y: rect.minY, width: 8.5, height: 8.5)
+            NSColor.white.setFill()
+            NSBezierPath(ovalIn: dot.insetBy(dx: -0.75, dy: -0.75)).fill()
+            NSColor.systemBlue.setFill()
+            NSBezierPath(ovalIn: dot).fill()
+            if let laptop = laptopGlyph {
+                let glyph = dot.insetBy(dx: 1.6, dy: 1.6)
+                let height = glyph.width * laptop.size.height / max(laptop.size.width, 1)
+                laptop.draw(in: NSRect(x: glyph.minX, y: glyph.midY - height / 2, width: glyph.width, height: height))
+            }
+            return true
+        }
+        badged.accessibilityDescription = "Copied on another device"
+        return badged
+    }
+
+    private static let laptopGlyph = NSImage(systemSymbolName: "laptopcomputer", accessibilityDescription: nil)?
+        .withSymbolConfiguration(NSImage.SymbolConfiguration(pointSize: 12, weight: .bold)
+            .applying(NSImage.SymbolConfiguration(paletteColors: [.white])))
 
     private static let osType = UTTagClass(rawValue: "com.apple.ostype")
     private static var cache: [String: NSImage] = [:]

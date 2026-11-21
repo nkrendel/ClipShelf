@@ -48,7 +48,7 @@ macOS **Universal Clipboard**, part of Handoff: a copy on one Mac becomes the
 clipboard on your nearby Macs signed in to the same Apple Account, and any
 clipboard manager that watches the clipboard records it.
 
-ClipShelf records these too, and marks them with a laptop icon, using the
+ClipShelf records these too, and marks them with a small blue laptop badge on their icon, using the
 `com.apple.is-remote-clipboard` type macOS adds to them. Universal Clipboard
 needs both Macs on the same Apple Account, Bluetooth and Wi-Fi on, Handoff on
 (System Settings › General › AirDrop & Handoff), and the Macs near each other.
