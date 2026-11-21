@@ -51,6 +51,13 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         return item
     }()
 
+    /// The preview beside the menu (picture or text); folder submenus report
+    /// their highlights to it directly.
+    private lazy var clipPreview = ClipPreview { [weak self] id in
+        guard let clip = self?.store.history.clips.first(where: { $0.id == id }) else { return nil }
+        return Self.previewContent(for: clip)
+    }
+
     var openSettings: () -> Void = {}
     var importClipMenuHistory: () -> Void = {}
 
@@ -121,7 +128,12 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         window.makeFirstResponder(searchField)
     }
 
+    func menu(_ menu: NSMenu, willHighlight item: NSMenuItem?) {
+        clipPreview.update(for: item)
+    }
+
     func menuDidClose(_ menu: NSMenu) {
+        clipPreview.hide()
         guard menu === openMenu else { return }
         openMenu = nil
 
@@ -196,6 +208,7 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
             for index in start..<end {
                 submenu.addItem(makeItem(for: clips[index], number: index + 1, keyEquivalent: key(index)))
             }
+            submenu.delegate = clipPreview
             folder.submenu = submenu
             menu.addItem(folder)
             start = end
@@ -276,11 +289,26 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         item.representedObject = clip.id
         item.image = icon(for: clip)
 
-        var tip = String((clip.text ?? clip.url?.absoluteString ?? clip.menuTitle(maxLength: 500)).prefix(500))
-        if clip.fromOtherDevice { tip += "\n\nCopied on another device (Universal Clipboard)" }
-        tip += "\n\n⌥-click: paste as plain text · ⇧-click: copy only · ⌃-click: remove"
-        item.toolTip = tip
         return item
+    }
+
+    /// What the preview beside the menu shows for a clip. This replaces
+    /// tooltips, so that every row waits the delay set in Settings.
+    static func previewContent(for clip: Clip) -> ClipPreview.Content {
+        var notes: [String] = []
+        var content = ClipPreview.Content(caption: "")
+        if clip.kind == .image, let data = clip.image, let image = NSImage(data: data) {
+            content.image = image
+            let pixels = ClipPreview.pixelSize(of: image)
+            notes.append("\(Int(pixels.width)) × \(Int(pixels.height)) pixels")
+        } else {
+            let text = clip.text ?? clip.url?.absoluteString ?? clip.menuTitle(maxLength: 500)
+            content.text = String(text.prefix(500))
+        }
+        if clip.fromOtherDevice { notes.append("Copied on another device (Universal Clipboard)") }
+        notes.append("⌥-click: paste as plain text · ⇧-click: copy only · ⌃-click: remove")
+        content.caption = notes.joined(separator: "\n")
+        return content
     }
 
     private func makeCommand(_ title: String, action: Selector) -> NSMenuItem {

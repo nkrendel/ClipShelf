@@ -35,6 +35,12 @@ and re-add ClipShelf there after every rebuild.
   macOS menus don't let the field see Escape); a second Escape closes it.
   Every word must match, in any order; case and accents are ignored. Before
   you type a letter, 1–0 still pick items.
+- Keep a row highlighted (with the mouse or arrow keys) for 2 seconds to see
+  a preview beside the menu: the picture for an image (with its size in
+  pixels), the text for everything else, and what modifier-clicks do. Each
+  row waits the full delay. Settings › Menu › Preview items sets the
+  delay or turns it off. This replaces ClipMenu's tooltips, whose timing
+  macOS controls.
 - Click an item to paste it into the app you were using.
   **⌥-click** pastes as plain text, **⇧-click** only copies, **⌃-click** removes it.
 - **Import ClipMenu History** (in the menu) brings over ClipMenu's

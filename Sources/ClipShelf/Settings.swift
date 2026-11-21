@@ -22,6 +22,7 @@ enum Settings {
         static let titleLength = "titleLength"
         static let numberItems = "numberItems"
         static let markOtherDeviceClips = "markOtherDeviceClips"
+        static let previewDelay = "previewDelay"
         static let excludedBundleIDs = "excludedBundleIDs"
         static let storeText = "storeText"
         static let storeRichText = "storeRichText"
@@ -53,6 +54,7 @@ enum Settings {
             Key.titleLength: 40,
             Key.numberItems: true,
             Key.markOtherDeviceClips: true,
+            Key.previewDelay: 2.0,
             Key.excludedBundleIDs: defaultExcludedBundleIDs,
             Key.storeText: true,
             Key.storeRichText: true,
@@ -75,6 +77,9 @@ enum Settings {
     static var titleLength: Int { max(10, defaults.integer(forKey: Key.titleLength)) }
     static var numberItems: Bool { defaults.bool(forKey: Key.numberItems) }
     static var markOtherDeviceClips: Bool { defaults.bool(forKey: Key.markOtherDeviceClips) }
+    /// Seconds a row stays highlighted before its preview appears;
+    /// negative turns previews off.
+    static var previewDelay: TimeInterval { defaults.double(forKey: Key.previewDelay) }
     static var excludedBundleIDs: Set<String> {
         Set(defaults.stringArray(forKey: Key.excludedBundleIDs) ?? [])
     }

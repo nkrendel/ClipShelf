@@ -11,6 +11,7 @@ struct SettingsView: View {
     @AppStorage(Settings.Key.titleLength) private var titleLength = 40
     @AppStorage(Settings.Key.numberItems) private var numberItems = true
     @AppStorage(Settings.Key.markOtherDeviceClips) private var markOtherDeviceClips = true
+    @AppStorage(Settings.Key.previewDelay) private var previewDelay = 2.0
     @AppStorage(Settings.Key.storeText) private var storeText = true
     @AppStorage(Settings.Key.storeRichText) private var storeRichText = true
     @AppStorage(Settings.Key.storeFiles) private var storeFiles = true
@@ -49,6 +50,13 @@ struct SettingsView: View {
                 Stepper("\(folderSize) items per folder", value: $folderSize, in: 5...50, step: 5)
                 Stepper("Titles up to \(titleLength) characters", value: $titleLength, in: 10...120, step: 5)
                 Toggle("Number the items", isOn: $numberItems)
+                Picker("Preview items", selection: $previewDelay) {
+                    Text("Never").tag(-1.0)
+                    Text("Immediately").tag(0.0)
+                    ForEach([0.5, 1, 2, 3, 5], id: \.self) { seconds in
+                        Text("After \(seconds.formatted()) s").tag(seconds)
+                    }
+                }
                 LabeledContent("Open the menu", value: "⌃⌘V")
             }
 
