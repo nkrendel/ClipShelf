@@ -66,6 +66,7 @@ Intel slice with REA and Ghidra.
 | Exclude list by bundle ID (default: OpenOffice) | Exclude list (default: password managers) + skips copies marked concealed/transient |
 | Paste via `CGEventCreateKeyboardEvent(V)` + ⌘ | Same, needs Accessibility permission |
 | Carbon `RegisterEventHotKey` (PTHotKey) | Same Carbon API |
+| Menu icons: Finder icons by type code (`TEXT`, `rtf`, `pdf`, `gurl`, `clpu`, folder `fldr`), 16 pt | Same Finder icons; file clips show the file's own icon |
 | `clips.data` (NSKeyedArchiver) | `~/Library/Application Support/ClipShelf/history.plist` (binary plist, mode 600) |
 
 ## Not yet built

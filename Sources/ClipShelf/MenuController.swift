@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import os
+import UniformTypeIdentifiers
 
 private let log = Logger(subsystem: "app.clipshelf.ClipShelf", category: "menu")
 
@@ -190,7 +191,7 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
         while start < clips.count {
             let end = min(start + Settings.folderSize, clips.count)
             let folder = NSMenuItem(title: "\(start + 1) – \(end)", action: nil, keyEquivalent: "")
-            folder.image = symbol("folder")
+            folder.image = FinderIcon.folder
             let submenu = NSMenu()
             for index in start..<end {
                 submenu.addItem(makeItem(for: clips[index], number: index + 1, keyEquivalent: key(index)))
@@ -290,7 +291,10 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
 
     private func icon(for clip: Clip) -> NSImage? {
         if clip.fromOtherDevice && Settings.markOtherDeviceClips {
-            return symbol("laptopcomputer.and.arrow.down") ?? symbol("icloud.and.arrow.down")
+            // Tinted so it stands out among the color document icons.
+            let config = NSImage.SymbolConfiguration(paletteColors: [.systemBlue])
+            return (symbol("laptopcomputer.and.arrow.down") ?? symbol("icloud.and.arrow.down"))?
+                .withSymbolConfiguration(config)
         }
         switch clip.kind {
         case .image:
@@ -298,12 +302,19 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
                 image.size = NSSize(width: 16, height: 16)
                 return image
             }
-            return symbol("photo")
-        case .files: return symbol("doc")
-        case .url: return symbol("link")
-        case .pdf: return symbol("doc.richtext")
-        case .richText: return symbol("textformat")
-        case .text: return symbol("text.alignleft")
+            return FinderIcon.image(for: .image)
+        case .files:
+            // The first file's own icon says more than ClipMenu's blank clipping icon.
+            if let file = clip.fileURLs?.first, FileManager.default.fileExists(atPath: file.path) {
+                let icon = NSWorkspace.shared.icon(forFile: file.path)
+                icon.size = FinderIcon.size
+                return icon
+            }
+            return FinderIcon.clipping
+        case .url: return FinderIcon.internetLocation
+        case .pdf: return FinderIcon.image(for: .pdf)
+        case .richText: return FinderIcon.image(for: clip.rtfd != nil ? .rtfd : .rtf)
+        case .text: return FinderIcon.plainText
         }
     }
 
@@ -475,3 +486,32 @@ final class MenuController: NSObject, NSMenuDelegate, NSSearchFieldDelegate {
     }
 }
 
+
+/// The color Finder icons ClipMenu shows in its menu: a document icon for
+/// each kind of clip (looked up by the same classic type codes ClipMenu
+/// uses) and the Finder folder for each group of 10.
+@MainActor
+enum FinderIcon {
+    static let size = NSSize(width: 16, height: 16)
+
+    static let folder = image(for: .folder)
+    static let plainText = image(forTypeCode: "TEXT", fallback: .plainText)
+    static let clipping = image(forTypeCode: "clpu", fallback: .item)
+    static let internetLocation = image(
+        for: UTType("com.apple.web-internet-location") ?? UTType(tag: "gurl", tagClass: osType, conformingTo: nil) ?? .url)
+
+    private static let osType = UTTagClass(rawValue: "com.apple.ostype")
+    private static var cache: [String: NSImage] = [:]
+
+    static func image(for type: UTType) -> NSImage {
+        if let cached = cache[type.identifier] { return cached }
+        let icon = (NSWorkspace.shared.icon(for: type).copy() as? NSImage) ?? NSImage()
+        icon.size = size
+        cache[type.identifier] = icon
+        return icon
+    }
+
+    private static func image(forTypeCode code: String, fallback: UTType) -> NSImage {
+        image(for: UTType(tag: code, tagClass: osType, conformingTo: nil) ?? fallback)
+    }
+}
